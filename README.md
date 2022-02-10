@@ -3,6 +3,7 @@ This is my first project using the react library, the project is about scraping 
 
 It uses a django rest api for the backend, BeautifulSoup and requests for the news site scraping, apscheduler to schedule the site scraping, and ReactJS for the frontend.
 
+The API documentation: https://documenter.getpostman.com/view/19201032/UVeMGNJk.
 
 <h2>Django Instructions:</h2>
 <ul>
