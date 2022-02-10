@@ -1,6 +1,8 @@
 # News-Aggregator
 This is my first project using the react library, the project is about scraping popular news sites in Nigeria and displaying their top stories all in one place without a need for 'website hopping'.
 
+It uses a django rest api for the backend, BeautifulSoup and requests for the news site scraping, apscheduler to schedule the site scraping, and ReactJS fir the frontend.
+
 
 <h2>Django Instructions:</h2>
 <ul>
@@ -21,3 +23,7 @@ This is my first project using the react library, the project is about scraping 
     <li>run npm install</li>
     <li>run npm start, you should be redirected to http://localhost:3000/</li>
 </ul>
+
+
+The interval between when the websites would be scraped is defined in settings;
+SCRAPE_INTERVAL = 10; it is given in minutes, it can be changed as deemed fit.
