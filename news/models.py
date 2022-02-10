@@ -34,6 +34,7 @@ class Newspaper(models.Model):
     
     def get_excerpt(self):
         text = bs(self.html, 'lxml').text
+        text = text.strip('[]') # seeing some artifacts in the html
         min_length = min(self.EXCERPT_LENGTH, len(text)) # bounded by the length of the article
         excerpt = text[:min_length]
         if len(text) > self.EXCERPT_LENGTH: # just three dots

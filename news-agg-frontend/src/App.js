@@ -30,7 +30,6 @@ class App extends Component {
     addPosts(){
         console.log(this.state.posts)
         if (this.state.posts == null){
-            console.log("shit is null")
             return <p>Data Incoming!</p>
         }
         
@@ -89,7 +88,7 @@ class App extends Component {
                                   <a href="#">{item.name}</a>
                                 </li>
                                 <li className="entry__meta-date">
-                                  {item.created_at}
+                                  {item.published}
                                 </li>
                               </ul>
                             </div>
@@ -125,7 +124,7 @@ class App extends Component {
                       <a href={this.latest.url}>{this.latest.name}</a>
                     </li>
                     <li className="entry__meta-date">
-                      {this.created_at}
+                      {this.latest.published}
                     </li>
                   </ul>
               </div>
@@ -134,12 +133,7 @@ class App extends Component {
     
     
     componentWillMount(){
-        console.log("will mount")
-        let link = document.createElement('link');
-        link.rel = "stylesheet"
-        link.href = process.env.PUBLIC_URL + "css/style.css";
-        document.head.appendChild(link);
-        
+        console.log("will mount")  
         let fontLink = document.createElement('link');
         fontLink.rel = "stylesheet"
         fontLink.href = "https://fonts.googleapis.com/css?family=Montserrat:400,600,700%7CSource+Sans+Pro:400,600,700";
@@ -186,9 +180,7 @@ class App extends Component {
                 </div>
             </div>
             <div className="content-overlay"></div>
-            <SideHeader />
             <main className="main oh" id="main">
-                <NavHeader />
                 <section className="featured-posts-grid">
                       <div className="container">
                         <div>                
