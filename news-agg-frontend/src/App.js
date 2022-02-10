@@ -63,7 +63,7 @@ class App extends Component {
     display(posts){
         console.log(posts)
         if (posts == null){
-            return <p>Data Outcoming!</p>
+            return <p>Loading</p>
         }
         return posts.map(function(item){
             return (<div className="col-md-6">
@@ -81,7 +81,7 @@ class App extends Component {
                             <div className="entry__header">
                               
                               <h2 className="entry__title">
-                                <a href="single-post.html">{item.title}</a>
+                                <a href={item.url}>{item.title}</a>
                               </h2>
                               <ul className="entry__meta">
                                 <li className="entry__meta-author">
@@ -191,7 +191,7 @@ class App extends Component {
                 <NavHeader />
                 <section className="featured-posts-grid">
                       <div className="container">
-                        <div className="row row-8">                
+                        <div>                
                           <div>
                             <div className="featured-posts-grid__item featured-posts-grid__item--lg">
                                 {this.displayLatest()}

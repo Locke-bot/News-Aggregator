@@ -6,7 +6,7 @@ import requests
 def scraper():
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
     print("entering now")
-    sites = ('the punch', 'the nation')
+    sites =  ('the punch', 'the nation',)
     posts = []
     if 'the nation' in sites:
         try:
@@ -15,23 +15,27 @@ def scraper():
             for i in parsed_page.select('.listing-blog article.type-post a[title]'):
                 print('in loop')
                 if i.attrs["title"].lower() != "Browse Author Articles".lower():
-                    print('actual shit')
                     post_url = i.attrs["href"]
                     fp = requests.get(post_url, headers=headers)
                     parsed_post = bs(fp.content, 'lxml')
+                    for i in parsed_post.select('.single-post-meta time b'):
+                        published = i.text
+                        print(f"The Nation ", published)
                     for i in parsed_post.select('a.post-thumbnail'):
-                        thumbnail_url = i.attrs['href']
-                    
+                        thumbnail_url = i.get('href')
                     for i in parsed_post.select('span.post-title'):
                         title = i.text
                     html = ''
                     for i in parsed_post.select('div.single-post-content'):
-                        for j in i.find_all('p', class_=None):
+                        for j in [i.find_all('p', class_=None), i.find_all('p', class_="MsoNormal")]:
                             html += str(j)
+                if not thumbnail_url:
+                    continue
                 post = Newspaper(name=Newspaper.TN, title=title, 
                                  slug=post_url.split(Newspaper.TN_BASE)[1][1:-1],
                                  post_thumbnail = thumbnail_url,
-                                 html = html
+                                 html = html,
+                                 published=published
                         ) # [1:-1] to remove the leading and trailing slash
                 posts.append(post)
         except Exception as e:
@@ -40,7 +44,7 @@ def scraper():
             empty = 0
             for post in posts:
                 if not post.html:
-                    print("Empty Page")
+                    print("Nation Empty Page", post.slug)
                     empty += 1
                     continue
                 try:
@@ -54,38 +58,44 @@ def scraper():
         parsed_page = bs(page.content, 'lxml')            
         try:
             for i in parsed_page.select('.list-timeline .entry-title a'):
-                print('in loop')
                 post_url = i.get("href")
                 post = requests.get(post_url, headers=headers)
                 page = bs(post.content, 'lxml')
+                for i in page.select_one('span.entry-date span'):
+                    published = i.text
+                    print("The punch", published)
                 for i in page.select('.entry-header .entry-title'):
                     title = i.text
+                    print("The punch", title)
                     
                 for i in page.select('picture.entry-featured-image img'):
                     thumbnail_url = i.get('src')
                     
                 html = ''
                 for i in page.select('.entry-content'):
-                    for j in i.find_all('p', class_=None, style=None):
+                    for j in i.find_all('p', class_=None):
                         html += str(j)
                         
                 post = Newspaper(name=Newspaper.TP, title=title, 
                                  slug=post_url.split(Newspaper.TP_BASE)[1][1:-1],
                                  post_thumbnail = thumbnail_url,
-                                 html = html
+                                 html = html,
+                                 published = published
                         ) # [1:-1] to remove the leading and trailing slash
                 posts.append(post)
         except Exception as e:
             print(f"{Newspaper.TP} Error: {e}")
-    if posts:
-        empty = 0
-        for post in posts:
-            if not post.html:
-                empty += 1
-                print("Empty Page")
-                continue
-            try:
-                post.save()
-            except IntegrityError:
-                pass
-        print(f"{len(posts)} from {Newspaper.TP} of which {empty} is empty")
+        if posts:
+            empty = 0
+            print([i.title for i in posts])
+            for post in posts:
+                if not post.html:
+                    empty += 1
+                    print("Empty Page")
+                    continue
+                try:
+                    post.save()
+                except IntegrityError as e:
+                    print(f"error {e}")
+                    pass
+            print(f"{len(posts)} from {Newspaper.TP} of which {empty} is empty")
