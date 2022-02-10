@@ -6,12 +6,12 @@ It uses a django rest api for the backend, BeautifulSoup and requests for the ne
 
 <h2>Django Instructions:</h2>
 <ul>
-    <li>set up a virtual environment and activate it<li>
+    <li>set up a virtual environment and activate it</li>
     <li>git clone https://github.com/Locke-bot/News-Aggregator.git</li>
     <li>cd News-Aggregator</li>
     <li>pip install -r requirements.txt</li>
     <li>if there is an issue, upgrading pip using python -m pip install --upgrade pip should solve it</li>
-    <li>run python manage.py runserver<li>
+    <li>run python manage.py runserver</li>
     <li>the site is being served at http://localhost:8000/ by default</li>
 </ul>
 
