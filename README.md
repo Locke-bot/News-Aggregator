@@ -18,7 +18,7 @@ It uses a django rest api for the backend, BeautifulSoup and requests for the ne
 <h2>React Instructions:</h2>
 <ul>
     <li>you must have node installed and npm available on the command line</li>
-    <li>activate the virtual environment<li>
+    <li>activate the virtual environment</li>
     <li>cd News-Aggregator/news-agg-frontend</li>
     <li>run npm install</li>
     <li>run npm start, you should be redirected to http://localhost:3000/</li>
