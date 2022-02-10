@@ -19,10 +19,8 @@ from news import views as nv
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', nv.HomeView),
     path('api/<int:number>', nv.NewsListApi.as_view()),
-    path('api/<int:pk>', nv.NewsApi.as_view()),
+    path('api/id/<int:pk>', nv.NewsApi.as_view()),
     # name is of the form the-punch, the-nation
     path('api/<str:name>/<int:number>', nv.SpecificNews.as_view()),
-    path('reload', nv.HomeView)
 ]

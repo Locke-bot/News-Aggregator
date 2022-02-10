@@ -138,4 +138,5 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+SCRAPE_INTERVAL = 10 # in minutes
 # NO_OF_POSTS = 6 # number of posts from each website that will be shown

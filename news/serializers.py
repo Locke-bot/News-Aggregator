@@ -6,5 +6,4 @@ from .models import Newspaper
 class NewsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Newspaper
-        fields = '__all__'
-        
+        exclude = ('created_at', 'modified_at')

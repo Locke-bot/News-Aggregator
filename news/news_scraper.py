@@ -5,7 +5,6 @@ import requests
 
 def scraper():
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
-    print("entering now")
     sites =  ('the punch', 'the nation',)
     posts = []
     if 'the nation' in sites:
@@ -13,14 +12,12 @@ def scraper():
             page = requests.get('https://thenationonlineng.net/news-update/', headers=headers)
             parsed_page = bs(page.content, 'lxml')
             for i in parsed_page.select('.listing-blog article.type-post a[title]'):
-                print('in loop')
                 if i.attrs["title"].lower() != "Browse Author Articles".lower():
                     post_url = i.attrs["href"]
                     fp = requests.get(post_url, headers=headers)
                     parsed_post = bs(fp.content, 'lxml')
                     for i in parsed_post.select('.single-post-meta time b'):
                         published = i.text
-                        print(f"The Nation ", published)
                     for i in parsed_post.select('a.post-thumbnail'):
                         thumbnail_url = i.get('href')
                     for i in parsed_post.select('span.post-title'):
@@ -39,19 +36,15 @@ def scraper():
                         ) # [1:-1] to remove the leading and trailing slash
                 posts.append(post)
         except Exception as e:
-            print(f"{Newspaper.TN} Error: {e}")
+            pass
         if posts:
-            empty = 0
             for post in posts:
                 if not post.html:
-                    print("Nation Empty Page", post.slug)
-                    empty += 1
                     continue
                 try:
                     post.save()
                 except IntegrityError:
                     pass
-            print(f"{len(posts)} from {Newspaper.TN} of which {empty} is empty")
             
     if 'the punch' in sites:
         page = requests.get('https://punchng.com/', headers=headers)
@@ -63,10 +56,8 @@ def scraper():
                 page = bs(post.content, 'lxml')
                 for i in page.select_one('span.entry-date span'):
                     published = i.text
-                    print("The punch", published)
                 for i in page.select('.entry-header .entry-title'):
                     title = i.text
-                    print("The punch", title)
                     
                 for i in page.select('picture.entry-featured-image img'):
                     thumbnail_url = i.get('src')
@@ -84,18 +75,12 @@ def scraper():
                         ) # [1:-1] to remove the leading and trailing slash
                 posts.append(post)
         except Exception as e:
-            print(f"{Newspaper.TP} Error: {e}")
+            pass
         if posts:
-            empty = 0
-            print([i.title for i in posts])
             for post in posts:
                 if not post.html:
-                    empty += 1
-                    print("Empty Page")
                     continue
                 try:
                     post.save()
                 except IntegrityError as e:
-                    print(f"error {e}")
                     pass
-            print(f"{len(posts)} from {Newspaper.TP} of which {empty} is empty")

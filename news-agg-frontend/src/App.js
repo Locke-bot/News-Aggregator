@@ -10,13 +10,14 @@ import 'jquery/src/jquery';
 import './css/bootstrap.min.css';
 import './css/font-icons.css';
 import './css/style.css';
+import './index.css'
 
 import axios from 'axios';
 
 const API = "http://127.0.0.1:8000/";
 const noFromEach = 6;
 const Newsletter = <NewsLetter />
-                   
+
 class App extends Component {
 
     constructor(props){
@@ -28,7 +29,6 @@ class App extends Component {
     }
     
     addPosts(){
-        console.log(this.state.posts)
         if (this.state.posts == null){
             return <p>Data Incoming!</p>
         }
@@ -46,7 +46,6 @@ class App extends Component {
                             <div className="tabs__content tabs__content-trigger tab-post__tabs-content">
                                 <div className="tabs__content-pane tabs__content-pane--active" id="tab-all">
                                     <div className="row card-row">
-                                        {console.log("WatchTower", this.state.posts.slice(1).slice(item*noFromEach, noFromEach*(item+1)))}
                                         {this.display(this.state.posts.slice(1).slice(item*noFromEach, noFromEach*(item+1)))}
                                     </div>
                                 </div>
@@ -60,9 +59,8 @@ class App extends Component {
     }
     
     display(posts){
-        console.log(posts)
         if (posts == null){
-            return <p>Loading</p>
+            return <p>Loading...</p>
         }
         return posts.map(function(item){
             return (<div className="col-md-6">
@@ -73,7 +71,6 @@ class App extends Component {
                                 <img data-src={item.post_thumbnail} src={item.post_thumbnail} className="entry__img lazyloaded" alt=""/>
                               </div>
                             </a>
-  
                           </div>
                     
                           <div className="entry__body card__body">
@@ -133,7 +130,6 @@ class App extends Component {
     
     
     componentWillMount(){
-        console.log("will mount")  
         let fontLink = document.createElement('link');
         fontLink.rel = "stylesheet"
         fontLink.href = "https://fonts.googleapis.com/css?family=Montserrat:400,600,700%7CSource+Sans+Pro:400,600,700";
@@ -153,7 +149,6 @@ class App extends Component {
     }    
     
     componentDidMount(){
-        console.log("mounted")
         axios.get(API + "api/" + noFromEach)
           .then(result => this.setState({
                 posts: result.data,
