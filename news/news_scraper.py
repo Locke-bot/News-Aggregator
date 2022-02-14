@@ -1,11 +1,17 @@
 from django.db import IntegrityError
 from .models import Newspaper
 from bs4 import BeautifulSoup as bs
-import requests
+import requests, sys
+import dateutil.parser
+import logging
+
+logging.basicConfig(filename='crawler.log', level=logging.INFO)
 
 def scraper():
+    print('as scheduled!')
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
-    sites =  ('the punch', 'the nation',)
+    VANGUARD_LIMIT = 15 # 35 posts are present, that's too much bandwidth wise, moreover they will be scraped before it gets pushed down the stack.
+    sites =  ('the punch', 'the nation', 'the vanguard')
     posts = []
     if 'the nation' in sites:
         try:
@@ -32,21 +38,16 @@ def scraper():
                                  slug=post_url.split(Newspaper.TN_BASE)[1][1:-1],
                                  post_thumbnail = thumbnail_url,
                                  html = html,
-                                 published=published
+                                 published=published,
+                                 url = post_url,
                         ) # [1:-1] to remove the leading and trailing slash
                 posts.append(post)
-        except Exception as e:
-            pass
-        if posts:
-            for post in posts:
-                if not post.html:
-                    continue
-                try:
-                    post.save()
-                except IntegrityError:
-                    pass
+        except Exception as e: # there might be changes in things from there end
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            logging.error(f"Exception type: {exc_type}, line-no: {exc_tb.tb_lineno}")
             
     if 'the punch' in sites:
+        print("the punch")
         page = requests.get('https://punchng.com/', headers=headers)
         parsed_page = bs(page.content, 'lxml')            
         try:
@@ -56,6 +57,7 @@ def scraper():
                 page = bs(post.content, 'lxml')
                 for i in page.select_one('span.entry-date span'):
                     published = i.text
+                    
                 for i in page.select('.entry-header .entry-title'):
                     title = i.text
                     
@@ -71,16 +73,65 @@ def scraper():
                                  slug=post_url.split(Newspaper.TP_BASE)[1][1:-1],
                                  post_thumbnail = thumbnail_url,
                                  html = html,
-                                 published = published
+                                 published = published,
+                                 url = post_url,
                         ) # [1:-1] to remove the leading and trailing slash
                 posts.append(post)
+                
         except Exception as e:
-            pass
-        if posts:
-            for post in posts:
-                if not post.html:
-                    continue
-                try:
-                    post.save()
-                except IntegrityError as e:
-                    pass
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            logging.error(f"Exception type: {exc_type}, line-no: {exc_tb.tb_lineno}")
+    
+    if "the vanguard" in sites:
+        try:
+            url = "https://www.vanguardngr.com/"
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
+            page = requests.get(url, headers=headers)
+            page = bs(page.content, 'lxml')
+            for enum, i in enumerate(page.select('ul.latest-news-list span.latest-news-title a')):
+                
+                if enum and enum == VANGUARD_LIMIT:
+                    raise Exception
+                    
+                post_url = i.get('href')
+                post = requests.get(post_url, headers=headers)
+                post = bs(post.content, 'lxml')
+                
+                for i in post.select('span.posted-on time'):
+                    published = dateutil.parser.isoparse(i.attrs.get('datetime')).date()
+                
+                for i in post.select('header h1.entry-title'):
+                    title = i.text.strip()
+                
+                thumbnail_url = None # so as to prevent the previous one from being used, reassign.
+                for i in [post.select('.entry-content figure>img'), post.select('.entry-content p img')]:
+                    if i: # yo u gotta catch this in case
+                        thumbnail_url = i[0].get('src')
+                    
+                html = ""
+                for i in post.select('.entry-content'):
+                    for j in i.find_all('p', class_=None):
+                        html += str(j)
+                
+                post = Newspaper(name=Newspaper.TV, title=title, 
+                     slug=post_url.split(Newspaper.TV_BASE)[1][1:-1],
+                     post_thumbnail = thumbnail_url,
+                     html = html,
+                     published = published,
+                     url = post_url,
+                ) # [1:-1] to remove the leading and trailing slash
+                posts.append(post)
+                
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            logging.error(f"Exception type: {exc_type}, line-no: {exc_tb.tb_lineno}")
+            
+    if posts:
+        for post in posts:
+            if not post.html:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                logging.info(f"HTML Empty; with url: {post.url}")
+            try:
+                post.save()
+            except IntegrityError as e: # this is to be expected there are overlaps between newly scraped news and those in the database
+                exc_type, exc_obj, exc_tb = sys.exc_info()

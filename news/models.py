@@ -9,8 +9,9 @@ class Newspaper(models.Model):
     TN, TP, TV = "The Nation", "The Punch", "The Vanguard"
     TN_BASE = "https://thenationonlineng.net"
     TP_BASE = "https://punchng.com"
-    name_url = {TN: TN_BASE, TP:TP_BASE}
-    order = (TN, TP) # ascemnding order
+    TV_BASE = "https://www.vanguardngr.com"
+    name_url = {TN: TN_BASE, TP:TP_BASE, TV:TV_BASE}
+    order = (TN, TP, TV) # ascending order
     PAPER_CHOICES = (
             (TN, "The Nation"),
             (TP, "The Punch"),
@@ -23,7 +24,7 @@ class Newspaper(models.Model):
     name = models.CharField(max_length=20, choices=PAPER_CHOICES)
     title = models.CharField(max_length=200)
     slug = models.CharField(max_length=200, unique=True)
-    post_thumbnail = models.URLField()
+    post_thumbnail = models.URLField(null=True) # I had to add it because some vanguard posts don't have thumbnails
     html = models.TextField()
     excerpt = models.TextField(max_length=50)
     url = models.URLField(null=True)
@@ -41,9 +42,6 @@ class Newspaper(models.Model):
             return excerpt.rstrip('.')+'...'
         return excerpt
 
-    def get_url(self):
-        return parse.urljoin(self.name_url[self.name], self.slug)
-
     def parse_date(self, date):
         # so case changes doesn't break the code
         if self.name.lower() == "The Nation".lower():
@@ -53,11 +51,10 @@ class Newspaper(models.Model):
         elif self.name.lower() == "The Punch".lower():
             # the punch's date is of the form "01 February 2022"
             return datetime.strptime(date, "%d %B %Y").date()
-            
+
     
     def save(self, *args, **kwargs):
         self.excerpt = self.get_excerpt()
-        self.url = self.get_url()
         if type(self.published) is str:
             self.published = self.parse_date(self.published)
         super().save(*args, **kwargs)

@@ -38,7 +38,7 @@ class App extends Component {
         return [...Array(Math.round(this.state.posts.length-1)/noFromEach).keys()].map(
             item=>(
                 <div className="row">
-                    <div className="col-lg-8 blog__content">
+                    <div className="blog__content">
                         <section className="section tab-post mb-16">
                             <div className="title-wrap title-wrap--line">
                                 <h3 className="section-title">{this.state.posts.slice(1)[item*noFromEach].name}</h3>
@@ -52,7 +52,6 @@ class App extends Component {
                             </div>
                         </section>
                     </div>
-                    { (noFromEach*item==0) && Newsletter }
                 </div>
             )
         )
@@ -63,10 +62,10 @@ class App extends Component {
             return <p>Loading...</p>
         }
         return posts.map(function(item){
-            return (<div className="col-md-6">
+            return (<div className="col-md-4">
                         <article className="entry card">
                           <div className="entry__img-holder card__img-holder">
-                            <a href={item.url}>
+                            <a target="_blank" href={item.url}>
                               <div className="thumb-container thumb-70">
                                 <img data-src={item.post_thumbnail} src={item.post_thumbnail} className="entry__img lazyloaded" alt=""/>
                               </div>
@@ -77,12 +76,12 @@ class App extends Component {
                             <div className="entry__header">
                               
                               <h2 className="entry__title">
-                                <a href={item.url}>{item.title}</a>
+                                <a target="_blank" href={item.url}>{item.title}</a>
                               </h2>
                               <ul className="entry__meta">
                                 <li className="entry__meta-author">
                                   <span>by</span>&nbsp;
-                                  <a href="#">{item.name}</a>
+                                  <a target="_blank" href="#">{item.name}</a>
                                 </li>
                                 <li className="entry__meta-date">
                                   {item.published}
@@ -106,19 +105,19 @@ class App extends Component {
         return(
             <article className="entry card featured-posts-grid__entry">
                <div className="entry__img-holder card__img-holder">
-                  <a href={this.latest.url}>
+                  <a target="_blank" href={this.latest.url}>
                     <img src={this.latest.post_thumbnail} alt="" className="entry__img"/>
                   </a>
                 </div>
     
                 <div className="entry__body card__body">   
                   <h2 className="entry__title">
-                    <a href={this.latest.url}>{this.latest.title}</a>
+                    <a target="_blank" href={this.latest.url}>{this.latest.title}</a>
                   </h2>
                   <ul className="entry__meta">
                     <li className="entry__meta-author">
                       <span>by</span>&nbsp;
-                      <a href={this.latest.url}>{this.latest.name}</a>
+                      <a target="_blank" href={this.latest.url}>{this.latest.name}</a>
                     </li>
                     <li className="entry__meta-date">
                       {this.latest.published}
