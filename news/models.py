@@ -6,16 +6,18 @@ from datetime import datetime
 # Create your models here.
 
 class Newspaper(models.Model):
-    TN, TP, TV = "The Nation", "The Punch", "The Vanguard"
+    TG, TN, TP, TV = "The Guardian", "The Nation", "The Punch", "The Vanguard"
+    TG_BASE = "https://guardian.ng/"
     TN_BASE = "https://thenationonlineng.net"
     TP_BASE = "https://punchng.com"
     TV_BASE = "https://www.vanguardngr.com"
-    name_url = {TN: TN_BASE, TP:TP_BASE, TV:TV_BASE}
-    order = (TN, TP, TV) # ascending order
+    name_url = {TG: TG_BASE, TN: TN_BASE, TP:TP_BASE, TV:TV_BASE}
+    order = (TG, TN, TP, TV) # ascending order
     PAPER_CHOICES = (
-            (TN, "The Nation"),
-            (TP, "The Punch"),
-            (TV, "The Vanguard"),
+            (TG, TG),
+            (TN, TN),
+            (TP, TP),
+            (TV, TV),
         )
     EXCERPT_LENGTH = 100
     
@@ -48,7 +50,7 @@ class Newspaper(models.Model):
             # the nation's date is of the form Feb 10, 2022
             return datetime.strptime(date, "%b %d, %Y").date()
         
-        elif self.name.lower() == "The Punch".lower():
+        elif self.name.lower() in ("The Punch".lower(), "The Guardian".lower()):
             # the punch's date is of the form "01 February 2022"
             return datetime.strptime(date, "%d %B %Y").date()
 

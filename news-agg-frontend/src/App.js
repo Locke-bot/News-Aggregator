@@ -15,7 +15,7 @@ import './index.css'
 import axios from 'axios';
 
 const API = "http://127.0.0.1:8000/";
-const noFromEach = 6;
+const noFromEach = 5;
 const Newsletter = <NewsLetter />
 
 class App extends Component {

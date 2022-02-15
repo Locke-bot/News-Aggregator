@@ -3,16 +3,67 @@ from .models import Newspaper
 from bs4 import BeautifulSoup as bs
 import requests, sys
 import dateutil.parser
-import logging
+import logging, re
 
 logging.basicConfig(filename='crawler.log', level=logging.INFO)
 
 def scraper():
-    print('as scheduled!')
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
-    VANGUARD_LIMIT = 15 # 35 posts are present, that's too much bandwidth wise, moreover they will be scraped before it gets pushed down the stack.
+    VANGUARD_LIMIT = 10 # 35 posts are present, that's too much bandwidth wise, moreover they will be scraped before it gets pushed down the stack.
     sites =  ('the punch', 'the nation', 'the vanguard')
+    # sites = ('the guardian', )
     posts = []
+    
+    if 'the guardian' in sites:
+        try:
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'}
+            page = requests.get("https://guardian.ng/", headers=headers)
+            page = bs(page.content, 'lxml')
+            regex = re.compile(r'(\bad\b|_ad|ad_)')
+            for enum, i in enumerate(page.select('section.title-latest .design-article.item .title a')):
+                post_url = i.get('href')
+                post = requests.get(post_url, headers=headers)
+                post = bs(post.content, 'lxml')
+                
+                for i in post.select('.article-header .subhead .date'):
+                    published = i.text.split('|')[0].strip()
+                    
+                for i in post.select('.article-header .title'):
+                    title = i.text
+                    
+                thumbnail_url = None
+                for i in post.select('.article-header img'):
+                    thumbnail_url = i.attrs.get('src')
+                    
+                post.select('.article-header')[0].decompose()
+                html = ''
+                for i in post.select('div.content article'):
+                    for j in i.findAll():
+                        try:
+                            class_ = j.attrs.get("class")
+                        except AttributeError: # because of decompose(), to remove ads widget
+                            pass
+                            
+                        if (class_) and any([regex.findall(klass) for klass in class_]):
+                            # if a class group is present and is of type article-header
+                            # or contains ad as a word not as part of a word
+                            j.decompose()
+                        else:
+                            html += str(j)            
+                
+                post = Newspaper(name=Newspaper.TG, title=title, 
+                                 slug=post_url.split(Newspaper.TG_BASE)[1][1:-1],
+                                 post_thumbnail = thumbnail_url,
+                                 html = html,
+                                 published=published,
+                                 url = post_url,
+                        ) # [1:-1] to remove the leading and trailing slash
+                posts.append(post)
+                
+        except Exception as e: # there might be changes in things from there end
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            logging.error(f"Exception type: {exc_type}, line-no: {exc_tb.tb_lineno}")                
+            
     if 'the nation' in sites:
         try:
             page = requests.get('https://thenationonlineng.net/news-update/', headers=headers)
@@ -24,6 +75,7 @@ def scraper():
                     parsed_post = bs(fp.content, 'lxml')
                     for i in parsed_post.select('.single-post-meta time b'):
                         published = i.text
+                    thumbnail_url = None
                     for i in parsed_post.select('a.post-thumbnail'):
                         thumbnail_url = i.get('href')
                     for i in parsed_post.select('span.post-title'):
@@ -47,7 +99,6 @@ def scraper():
             logging.error(f"Exception type: {exc_type}, line-no: {exc_tb.tb_lineno}")
             
     if 'the punch' in sites:
-        print("the punch")
         page = requests.get('https://punchng.com/', headers=headers)
         parsed_page = bs(page.content, 'lxml')            
         try:
@@ -60,7 +111,7 @@ def scraper():
                     
                 for i in page.select('.entry-header .entry-title'):
                     title = i.text
-                    
+                thumbnail_url = None
                 for i in page.select('picture.entry-featured-image img'):
                     thumbnail_url = i.get('src')
                     
